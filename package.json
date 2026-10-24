@@ -1,15 +1,13 @@
 {
   "name": "freeleo-cli",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "type": "module",
   "bin": {
     "f": "./f.js"
   },
-  "scripts": {
-    "postinstall": "node-llama-cpp pull --dir ./models \"hf:Qwen/Qwen2.5-3B-Instruct-GGUF/qwen2.5-3b-instruct-q4_k_m.gguf\""
-  },
   "dependencies": {
-    "duck-duck-scrape": "^2.2.6",
+    "express": "^4.19.2",
+    "localtunnel": "^2.0.2",
     "node-llama-cpp": "^3.0.0"
   }
 }
