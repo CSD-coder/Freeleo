@@ -8,8 +8,8 @@ mkdir C:\FreeleoCLI\memory -ErrorAction SilentlyContinue
 mkdir C:\FreeleoCLI\integrations -ErrorAction SilentlyContinue
 cd C:\FreeleoCLI
 
-# 2. Download project files from Statically CDN with correct @main syntax
-$baseUrl = "https://cdn.statically.io/gh/CSD-coder/Freeleo@main"
+# 2. Download project files directly from GitHub Raw
+$baseUrl = "https://raw.githubusercontent.com/CSD-coder/Freeleo/main"
 
 Invoke-WebRequest -Uri "$baseUrl/package.json" -OutFile "C:\FreeleoCLI\package.json"
 Invoke-WebRequest -Uri "$baseUrl/f.js" -OutFile "C:\FreeleoCLI\f.js"
