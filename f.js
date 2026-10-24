@@ -8,6 +8,7 @@ import os from "os";
 import crypto from "crypto";
 import express from "express";
 import localtunnel from "localtunnel";
+import { execSync } from "child_process";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -23,33 +24,32 @@ const CONFIG_FILE = path.join(MEMORY_DIR, "config.json");
 const AVAILABLE_MODELS = [
   // --- Ultra Light Tier (4GB RAM) ---
   { id: "qwen-0.5b", name: "Qwen 2.5 0.5B", uri: "hf:Qwen/Qwen2.5-0.5B-Instruct-GGUF/qwen2.5-0.5b-instruct-q4_k_m.gguf", reqRamGB: 4, size: "~390 MB", intelligence: 1 },
-  { id: "llama-1b", name: "Llama 3.2 1B", uri: "hf:unsloth/Llama-3.2-1B-Instruct-GGUF/Llama-3.2-1B-Instruct-Q4_K_M.gguf", reqRamGB: 4, size: "~800 MB", intelligence: 2 },
-  { id: "gemma-2b", name: "Gemma 2 2B", uri: "hf:unsloth/gemma-2-2b-it-GGUF/gemma-2-2b-it-Q4_K_M.gguf", reqRamGB: 4, size: "~1.6 GB", intelligence: 3 },
   { id: "smollm2-1.7b", name: "SmolLM2 1.7B", uri: "hf:HuggingFaceTB/SmolLM2-1.7B-Instruct-GGUF/smollm2-1.7b-instruct-q4_k_m.gguf", reqRamGB: 4, size: "~1.1 GB", intelligence: 2 },
+  { id: "qwen-coder-1.5b", name: "Qwen 2.5 Coder 1.5B", uri: "hf:Qwen/Qwen2.5-Coder-1.5B-Instruct-GGUF/qwen2.5-coder-1.5b-instruct-q4_k_m.gguf", reqRamGB: 4, size: "~1.1 GB", intelligence: 3 },
 
   // --- Lightweight Tier (8GB RAM) ---
   { id: "qwen-1.5b", name: "Qwen 2.5 1.5B", uri: "hf:Qwen/Qwen2.5-1.5B-Instruct-GGUF/qwen2.5-1.5b-instruct-q4_k_m.gguf", reqRamGB: 8, size: "~1.1 GB", intelligence: 4 },
-  { id: "llama-3b", name: "Llama 3.2 3B", uri: "hf:unsloth/Llama-3.2-3B-Instruct-GGUF/Llama-3.2-3B-Instruct-Q4_K_M.gguf", reqRamGB: 8, size: "~2.0 GB", intelligence: 5 },
-  { id: "phi-4-mini", name: "Microsoft Phi-4 Mini 3.8B", uri: "hf:bartowski/Phi-4-mini-instruct-GGUF/Phi-4-mini-instruct-Q4_K_M.gguf", reqRamGB: 8, size: "~2.4 GB", intelligence: 7 },
-  { id: "deepseek-1.5b", name: "DeepSeek-R1-Distill-Qwen 1.5B", uri: "hf:unsloth/DeepSeek-R1-Distill-Qwen-1.5B-GGUF/DeepSeek-R1-Distill-Qwen-1.5B-Q4_K_M.gguf", reqRamGB: 8, size: "~1.2 GB", intelligence: 6 },
+  { id: "deepseek-1.5b", name: "DeepSeek-R1-Distill-Qwen 1.5B", uri: "hf:unsloth/DeepSeek-R1-Distill-Qwen-1.5B-GGUF/DeepSeek-R1-Distill-Qwen-1.5B-Q4_K_M.gguf", reqRamGB: 8, size: "~1.2 GB", intelligence: 5 },
+  { id: "phi-3.5-mini", name: "Microsoft Phi-3.5 Mini 3.8B", uri: "hf:bartowski/Phi-3.5-mini-instruct-GGUF/Phi-3.5-mini-instruct-Q4_K_M.gguf", reqRamGB: 8, size: "~2.4 GB", intelligence: 6 },
   { id: "minicpm-3b", name: "MiniCPM 3 4B", uri: "hf:openbmb/MiniCPM-3-4B-Instruct-GGUF/minicpm-3-4b-instruct-q4_k_m.gguf", reqRamGB: 8, size: "~2.6 GB", intelligence: 6 },
+  { id: "qwen-coder-3b", name: "Qwen 2.5 Coder 3B", uri: "hf:Qwen/Qwen2.5-Coder-3B-Instruct-GGUF/qwen2.5-coder-3b-instruct-q4_k_m.gguf", reqRamGB: 8, size: "~2.0 GB", intelligence: 7 },
 
   // --- Balanced Tier (16GB RAM) ---
   { id: "qwen-3b", name: "Qwen 2.5 3B", uri: "hf:Qwen/Qwen2.5-3B-Instruct-GGUF/qwen2.5-3b-instruct-q4_k_m.gguf", reqRamGB: 12, size: "~1.93 GB", intelligence: 8 },
+  { id: "deepseek-7b", name: "DeepSeek-R1-Distill-Qwen 7B", uri: "hf:unsloth/DeepSeek-R1-Distill-Qwen-7B-GGUF/DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf", reqRamGB: 16, size: "~4.9 GB", intelligence: 9 },
   { id: "mistral-7b", name: "Mistral 7B Instruct v0.3", uri: "hf:unsloth/mistral-7b-instruct-v0.3-GGUF/mistral-7b-instruct-v0.3-Q4_K_M.gguf", reqRamGB: 16, size: "~4.4 GB", intelligence: 9 },
-  { id: "gemma-2-9b", name: "Gemma 2 9B", uri: "hf:unsloth/gemma-2-9b-it-GGUF/gemma-2-9b-it-Q4_K_M.gguf", reqRamGB: 16, size: "~5.8 GB", intelligence: 10 },
-  { id: "deepseek-7b", name: "DeepSeek-R1-Distill-Qwen 7B", uri: "hf:unsloth/DeepSeek-R1-Distill-Qwen-7B-GGUF/DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf", reqRamGB: 16, size: "~4.9 GB", intelligence: 10 },
-  { id: "llama-8b", name: "Llama 3.1 8B Instruct", uri: "hf:unsloth/Meta-Llama-3.1-8B-Instruct-GGUF/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf", reqRamGB: 16, size: "~4.9 GB", intelligence: 10 },
+  { id: "qwen-coder-7b", name: "Qwen 2.5 Coder 7B", uri: "hf:Qwen/Qwen2.5-Coder-7B-Instruct-GGUF/qwen2.5-coder-7b-instruct-q4_k_m.gguf", reqRamGB: 16, size: "~4.7 GB", intelligence: 10 },
 
   // --- High Performance Tier (32GB RAM) ---
   { id: "qwen-7b", name: "Qwen 2.5 7B", uri: "hf:Qwen/Qwen2.5-7B-Instruct-GGUF/qwen2.5-7b-instruct-q4_k_m.gguf", reqRamGB: 24, size: "~4.5 GB", intelligence: 11 },
-  { id: "command-r-35b", name: "Cohere Command R 35B", uri: "hf:bartowski/c4ai-command-r-v01-GGUF/c4ai-command-r-v01-Q4_K_M.gguf", reqRamGB: 32, size: "~20 GB", intelligence: 13 },
+  { id: "deepseek-14b", name: "DeepSeek-R1-Distill-Qwen 14B", uri: "hf:unsloth/DeepSeek-R1-Distill-Qwen-14B-GGUF/DeepSeek-R1-Distill-Qwen-14B-Q4_K_M.gguf", reqRamGB: 32, size: "~9.0 GB", intelligence: 12 },
   { id: "qwen-14b", name: "Qwen 2.5 14B", uri: "hf:Qwen/Qwen2.5-14B-Instruct-GGUF/qwen2.5-14b-instruct-q4_k_m.gguf", reqRamGB: 32, size: "~9.0 GB", intelligence: 12 },
-  { id: "deepseek-14b", name: "DeepSeek-R1-Distill-Qwen 14B", uri: "hf:unsloth/DeepSeek-R1-Distill-Qwen-14B-GGUF/DeepSeek-R1-Distill-Qwen-14B-Q4_K_M.gguf", reqRamGB: 32, size: "~9.0 GB", intelligence: 13 },
+  { id: "command-r-35b", name: "Cohere Command R 35B", uri: "hf:bartowski/c4ai-command-r-v01-GGUF/c4ai-command-r-v01-Q4_K_M.gguf", reqRamGB: 32, size: "~20 GB", intelligence: 13 },
 
   // --- Enthusiast Tier (64GB+ RAM) ---
+  { id: "deepseek-32b", name: "DeepSeek-R1-Distill-Qwen 32B", uri: "hf:unsloth/DeepSeek-R1-Distill-Qwen-32B-GGUF/DeepSeek-R1-Distill-Qwen-32B-Q4_K_M.gguf", reqRamGB: 48, size: "~20 GB", intelligence: 14 },
   { id: "qwen-32b", name: "Qwen 2.5 32B", uri: "hf:Qwen/Qwen2.5-32B-Instruct-GGUF/qwen2.5-32b-instruct-q4_k_m.gguf", reqRamGB: 48, size: "~20 GB", intelligence: 15 },
-  { id: "llama-70b", name: "Llama 3.1 70B Instruct", uri: "hf:unsloth/Meta-Llama-3.1-70B-Instruct-GGUF/Meta-Llama-3.1-70B-Instruct-Q4_K_M.gguf", reqRamGB: 64, size: "~42 GB", intelligence: 16 }
+  { id: "qwen-72b", name: "Qwen 2.5 72B", uri: "hf:Qwen/Qwen2.5-72B-Instruct-GGUF/qwen2.5-72b-instruct-q4_k_m.gguf", reqRamGB: 64, size: "~47 GB", intelligence: 16 }
 ];
 
 const args = process.argv.slice(2);
@@ -70,7 +70,7 @@ function saveJson(filePath, data) {
 }
 
 function getSelectedModelUri() {
-  const config = loadJson(CONFIG_FILE, { activeModelUri: AVAILABLE_MODELS[4].uri });
+  const config = loadJson(CONFIG_FILE, { activeModelUri: AVAILABLE_MODELS[3].uri });
   return config.activeModelUri;
 }
 
@@ -130,6 +130,30 @@ async function selectModelInteractive() {
       resolve();
     });
   });
+}
+
+async function handleUpdateCommand() {
+  console.log("\x1b[36mUpdating Freeleo CLI (preserving models, history, memory, and integrations)...\x1b[0m");
+  const baseUrl = "https://raw.githubusercontent.com/CSD-coder/Freeleo/main";
+
+  try {
+    console.log("Downloading latest package.json...");
+    const pkgRes = await fetch(`${baseUrl}/package.json`);
+    if (!pkgRes.ok) throw new Error(`Failed to fetch package.json (${pkgRes.statusText})`);
+    fs.writeFileSync(path.join(__dirname, "package.json"), await pkgRes.text(), "utf-8");
+
+    console.log("Downloading latest f.js...");
+    const fRes = await fetch(`${baseUrl}/f.js`);
+    if (!fRes.ok) throw new Error(`Failed to fetch f.js (${fRes.statusText})`);
+    fs.writeFileSync(path.join(__dirname, "f.js"), await fRes.text(), "utf-8");
+
+    console.log("Updating npm dependencies...");
+    execSync("npm install", { cwd: __dirname, stdio: "inherit" });
+
+    console.log("\n\x1b[32m✔ Freeleo CLI updated successfully! All your data and models were preserved.\x1b[0m");
+  } catch (err) {
+    console.log(`\x1b[31mUpdate failed: ${err.message}\x1b[0m`);
+  }
 }
 
 async function handleDeleteCommand(targetModelQuery) {
@@ -345,7 +369,8 @@ function runWalkthrough() {
   console.log("5. \x1b[32mf --rules\x1b[0m   View and edit self-improved behavioral guidelines.");
   console.log("6. \x1b[32mf --expose\x1b[0m  Run local HTTP REST server on localhost:5000.");
   console.log("7. \x1b[32mf --api\x1b[0m     Expose local server publicly using Localtunnel & API Key.");
-  console.log("8. \x1b[32mf --delete\x1b[0m  Delete entire platform or specific models.");
+  console.log("8. \x1b[32mf --update\x1b[0m  Update Freeleo to the latest version preserving your data.");
+  console.log("9. \x1b[32mf --delete\x1b[0m  Delete entire platform or specific models.");
   console.log("\nSetup complete! Type 'f --chat' to get started immediately.\n");
 }
 
@@ -469,6 +494,7 @@ function printHelp() {
   console.log("  f --new               Run interactive first-time walkthrough");
   console.log("  f --expose            Expose local OpenAI-compatible REST server at localhost:5000");
   console.log("  f --api               Expose server publicly via Localtunnel with generated API key");
+  console.log("  f --update            Update Freeleo to the latest version preserving your data");
   console.log("  f --delete            Delete the entire Freeleo platform workspace");
   console.log("  f --delete <model>    Delete a specific downloaded model");
   console.log("  f --list              List saved conversation histories");
@@ -492,6 +518,8 @@ if (args.includes("--connect")) {
   startServer(5000, null);
 } else if (args.includes("--api")) {
   exposePublicly();
+} else if (args.includes("--update")) {
+  handleUpdateCommand();
 } else if (args.includes("--delete") || args.includes("-d")) {
   const deleteIdx = args.indexOf("--delete") !== -1 ? args.indexOf("--delete") : args.indexOf("-d");
   const target = args[deleteIdx + 1];
