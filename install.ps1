@@ -9,7 +9,7 @@ mkdir C:\FreeleoCLI\integrations -ErrorAction SilentlyContinue
 cd C:\FreeleoCLI
 
 # 2. Download project files from Statically CDN / GitHub
-$baseUrl = "https://cdn.statically.io/gh/your-username/FreeleoCLI/main"
+$baseUrl = "https://cdn.statically.io/gh/CSD-coder/Freeleo/main"
 
 Invoke-WebRequest -Uri "$baseUrl/package.json" -OutFile "C:\FreeleoCLI\package.json"
 Invoke-WebRequest -Uri "$baseUrl/f.js" -OutFile "C:\FreeleoCLI\f.js"
