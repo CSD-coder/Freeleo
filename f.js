@@ -275,31 +275,40 @@ async function processPostSession(session) {
   console.log("\n\x1b[33m[Freeleo Processing Memory & Self-Reflection...]\x1b[0m");
 
   try {
-    const memoryPrompt = "Analyze our conversation. Did the user share personal facts or preferences? Return concise summary or 'NONE'.";
+    const chatHistory = session.getChatHistory();
+    const transcript = chatHistory.map(h => `${h.role}: ${h.content}`).join("\n");
+
+    const sequence = session.sequence;
+    const analysisSession = new LlamaChatSession({
+      contextSequence: sequence,
+      systemPrompt: "You are an objective AI memory analyzer. Extract facts or rules silently and precisely."
+    });
+
+    const memoryPrompt = `Analyze this conversation transcript:\n${transcript}\n\nDid the user share personal facts or preferences? Return ONLY a concise summary of the fact, or 'NONE'.`;
     let memoryResult = "";
-    await session.prompt(memoryPrompt, { onTextChunk(chunk) { memoryResult += chunk; } });
+    await analysisSession.prompt(memoryPrompt, { onTextChunk(chunk) { memoryResult += chunk; } });
 
     const cleanMemory = memoryResult.trim();
-    if (cleanMemory && !cleanMemory.includes("NONE")) {
+    if (cleanMemory && !cleanMemory.toUpperCase().includes("NONE")) {
       const currentMemory = loadJson(USER_MEMORY_FILE, []);
       currentMemory.push(cleanMemory);
       saveJson(USER_MEMORY_FILE, currentMemory);
       console.log(`\x1b[32m✔ New Fact Remembered: "${cleanMemory}"\x1b[0m`);
     }
 
-    const reflectionPrompt = "Did you make any mistakes in this chat session? Return a new rule or 'NO_CHANGE'.";
+    const reflectionPrompt = `Analyze this conversation transcript:\n${transcript}\n\nDid the AI make any mistakes or could it improve its responses? Return ONLY a concise new behavioral rule, or 'NO_CHANGE'.`;
     let reflectionResult = "";
-    await session.prompt(reflectionPrompt, { onTextChunk(chunk) { reflectionResult += chunk; } });
+    await analysisSession.prompt(reflectionPrompt, { onTextChunk(chunk) { reflectionResult += chunk; } });
 
     const cleanReflection = reflectionResult.trim();
-    if (cleanReflection && !cleanReflection.includes("NO_CHANGE")) {
+    if (cleanReflection && !cleanReflection.toUpperCase().includes("NO_CHANGE")) {
       const currentRules = loadJson(RULES_FILE, []);
       currentRules.push(cleanReflection);
       saveJson(RULES_FILE, currentRules);
       console.log(`\x1b[32m✔ Self-Improvement Learned: "${cleanReflection}"\x1b[0m`);
     }
   } catch (err) {
-    console.log("\x1b[31mPost-session processing skipped.\x1b[0m");
+    console.log(`\x1b[31mPost-session processing skipped: ${err.message}\x1b[0m`);
   }
 }
 
@@ -457,10 +466,11 @@ async function startChat(enableConnect = false, chatId = null) {
         console.log("Goodbye!");
         rl.close();
         process.exit(0);
+        return;
       }
 
       if (trimmed) {
-        process.stdout.write("\x1b[34mAI > \x1b[0m");
+        process.stdout.write("\x1b[34mFreeleo > \x1b[0m");
         await session.prompt(trimmed, {
           functions: enableConnect ? functions : undefined,
           onTextChunk(chunk) {
