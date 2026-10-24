@@ -11,10 +11,14 @@ cd C:\FreeleoCLI
 # 2. Download project files directly from GitHub Raw
 $baseUrl = "https://raw.githubusercontent.com/CSD-coder/Freeleo/main"
 
-Invoke-WebRequest -Uri "$baseUrl/package.json" -OutFile "C:\FreeleoCLI\package.json"
-Invoke-WebRequest -Uri "$baseUrl/f.js" -OutFile "C:\FreeleoCLI\f.js"
+Write-Host "Downloading package.json..." -ForegroundColor Yellow
+Invoke-WebRequest -Uri "$baseUrl/package.json" -OutFile "C:\FreeleoCLI\package.json" -UseBasicParsing
+
+Write-Host "Downloading f.js..." -ForegroundColor Yellow
+Invoke-WebRequest -Uri "$baseUrl/f.js" -OutFile "C:\FreeleoCLI\f.js" -UseBasicParsing
 
 # 3. Install NPM packages & link command globally
+Write-Host "Installing dependencies..." -ForegroundColor Yellow
 npm install
 npm link
 
