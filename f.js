@@ -21,10 +21,35 @@ const USER_MEMORY_FILE = path.join(MEMORY_DIR, "user_memory.json");
 const CONFIG_FILE = path.join(MEMORY_DIR, "config.json");
 
 const AVAILABLE_MODELS = [
-  { id: "0.5b", name: "Qwen 2.5 0.5B (Ultra Light)", uri: "hf:Qwen/Qwen2.5-0.5B-Instruct-GGUF/qwen2.5-0.5b-instruct-q4_k_m.gguf", reqRamGB: 4, size: "~390 MB" },
-  { id: "1.5b", name: "Qwen 2.5 1.5B (Balanced)", uri: "hf:Qwen/Qwen2.5-1.5B-Instruct-GGUF/qwen2.5-1.5b-instruct-q4_k_m.gguf", reqRamGB: 8, size: "~1.1 GB" },
-  { id: "3b", name: "Qwen 2.5 3B (Smarter / Recommended)", uri: "hf:Qwen/Qwen2.5-3B-Instruct-GGUF/qwen2.5-3b-instruct-q4_k_m.gguf", reqRamGB: 16, size: "~1.93 GB" },
-  { id: "7b", name: "Qwen 2.5 7B (High Performance)", uri: "hf:Qwen/Qwen2.5-7B-Instruct-GGUF/qwen2.5-7b-instruct-q4_k_m.gguf", reqRamGB: 32, size: "~4.5 GB" }
+  // --- Ultra Light Tier (4GB RAM) ---
+  { id: "qwen-0.5b", name: "Qwen 2.5 0.5B", uri: "hf:Qwen/Qwen2.5-0.5B-Instruct-GGUF/qwen2.5-0.5b-instruct-q4_k_m.gguf", reqRamGB: 4, size: "~390 MB", intelligence: 1 },
+  { id: "llama-1b", name: "Llama 3.2 1B", uri: "hf:unsloth/Llama-3.2-1B-Instruct-GGUF/Llama-3.2-1B-Instruct-Q4_K_M.gguf", reqRamGB: 4, size: "~800 MB", intelligence: 2 },
+  { id: "gemma-2b", name: "Gemma 2 2B", uri: "hf:unsloth/gemma-2-2b-it-GGUF/gemma-2-2b-it-Q4_K_M.gguf", reqRamGB: 4, size: "~1.6 GB", intelligence: 3 },
+  { id: "smollm2-1.7b", name: "SmolLM2 1.7B", uri: "hf:HuggingFaceTB/SmolLM2-1.7B-Instruct-GGUF/smollm2-1.7b-instruct-q4_k_m.gguf", reqRamGB: 4, size: "~1.1 GB", intelligence: 2 },
+
+  // --- Lightweight Tier (8GB RAM) ---
+  { id: "qwen-1.5b", name: "Qwen 2.5 1.5B", uri: "hf:Qwen/Qwen2.5-1.5B-Instruct-GGUF/qwen2.5-1.5b-instruct-q4_k_m.gguf", reqRamGB: 8, size: "~1.1 GB", intelligence: 4 },
+  { id: "llama-3b", name: "Llama 3.2 3B", uri: "hf:unsloth/Llama-3.2-3B-Instruct-GGUF/Llama-3.2-3B-Instruct-Q4_K_M.gguf", reqRamGB: 8, size: "~2.0 GB", intelligence: 5 },
+  { id: "phi-4-mini", name: "Microsoft Phi-4 Mini 3.8B", uri: "hf:bartowski/Phi-4-mini-instruct-GGUF/Phi-4-mini-instruct-Q4_K_M.gguf", reqRamGB: 8, size: "~2.4 GB", intelligence: 7 },
+  { id: "deepseek-1.5b", name: "DeepSeek-R1-Distill-Qwen 1.5B", uri: "hf:unsloth/DeepSeek-R1-Distill-Qwen-1.5B-GGUF/DeepSeek-R1-Distill-Qwen-1.5B-Q4_K_M.gguf", reqRamGB: 8, size: "~1.2 GB", intelligence: 6 },
+  { id: "minicpm-3b", name: "MiniCPM 3 4B", uri: "hf:openbmb/MiniCPM-3-4B-Instruct-GGUF/minicpm-3-4b-instruct-q4_k_m.gguf", reqRamGB: 8, size: "~2.6 GB", intelligence: 6 },
+
+  // --- Balanced Tier (16GB RAM) ---
+  { id: "qwen-3b", name: "Qwen 2.5 3B", uri: "hf:Qwen/Qwen2.5-3B-Instruct-GGUF/qwen2.5-3b-instruct-q4_k_m.gguf", reqRamGB: 12, size: "~1.93 GB", intelligence: 8 },
+  { id: "mistral-7b", name: "Mistral 7B Instruct v0.3", uri: "hf:unsloth/mistral-7b-instruct-v0.3-GGUF/mistral-7b-instruct-v0.3-Q4_K_M.gguf", reqRamGB: 16, size: "~4.4 GB", intelligence: 9 },
+  { id: "gemma-2-9b", name: "Gemma 2 9B", uri: "hf:unsloth/gemma-2-9b-it-GGUF/gemma-2-9b-it-Q4_K_M.gguf", reqRamGB: 16, size: "~5.8 GB", intelligence: 10 },
+  { id: "deepseek-7b", name: "DeepSeek-R1-Distill-Qwen 7B", uri: "hf:unsloth/DeepSeek-R1-Distill-Qwen-7B-GGUF/DeepSeek-R1-Distill-Qwen-7B-Q4_K_M.gguf", reqRamGB: 16, size: "~4.9 GB", intelligence: 10 },
+  { id: "llama-8b", name: "Llama 3.1 8B Instruct", uri: "hf:unsloth/Meta-Llama-3.1-8B-Instruct-GGUF/Meta-Llama-3.1-8B-Instruct-Q4_K_M.gguf", reqRamGB: 16, size: "~4.9 GB", intelligence: 10 },
+
+  // --- High Performance Tier (32GB RAM) ---
+  { id: "qwen-7b", name: "Qwen 2.5 7B", uri: "hf:Qwen/Qwen2.5-7B-Instruct-GGUF/qwen2.5-7b-instruct-q4_k_m.gguf", reqRamGB: 24, size: "~4.5 GB", intelligence: 11 },
+  { id: "command-r-35b", name: "Cohere Command R 35B", uri: "hf:bartowski/c4ai-command-r-v01-GGUF/c4ai-command-r-v01-Q4_K_M.gguf", reqRamGB: 32, size: "~20 GB", intelligence: 13 },
+  { id: "qwen-14b", name: "Qwen 2.5 14B", uri: "hf:Qwen/Qwen2.5-14B-Instruct-GGUF/qwen2.5-14b-instruct-q4_k_m.gguf", reqRamGB: 32, size: "~9.0 GB", intelligence: 12 },
+  { id: "deepseek-14b", name: "DeepSeek-R1-Distill-Qwen 14B", uri: "hf:unsloth/DeepSeek-R1-Distill-Qwen-14B-GGUF/DeepSeek-R1-Distill-Qwen-14B-Q4_K_M.gguf", reqRamGB: 32, size: "~9.0 GB", intelligence: 13 },
+
+  // --- Enthusiast Tier (64GB+ RAM) ---
+  { id: "qwen-32b", name: "Qwen 2.5 32B", uri: "hf:Qwen/Qwen2.5-32B-Instruct-GGUF/qwen2.5-32b-instruct-q4_k_m.gguf", reqRamGB: 48, size: "~20 GB", intelligence: 15 },
+  { id: "llama-70b", name: "Llama 3.1 70B Instruct", uri: "hf:unsloth/Meta-Llama-3.1-70B-Instruct-GGUF/Meta-Llama-3.1-70B-Instruct-Q4_K_M.gguf", reqRamGB: 64, size: "~42 GB", intelligence: 16 }
 ];
 
 const args = process.argv.slice(2);
@@ -45,7 +70,7 @@ function saveJson(filePath, data) {
 }
 
 function getSelectedModelUri() {
-  const config = loadJson(CONFIG_FILE, { activeModelUri: AVAILABLE_MODELS[2].uri });
+  const config = loadJson(CONFIG_FILE, { activeModelUri: AVAILABLE_MODELS[4].uri });
   return config.activeModelUri;
 }
 
@@ -55,31 +80,38 @@ function getSystemRamGB() {
 
 function sortModelsByHardware() {
   const ram = getSystemRamGB();
-  const recommended = [];
-  const compatible = [];
+  const compatible = AVAILABLE_MODELS.filter(m => ram >= m.reqRamGB);
 
-  AVAILABLE_MODELS.forEach(m => {
-    if (ram >= m.reqRamGB) {
-      recommended.push(m);
-    } else {
-      compatible.push(m);
-    }
-  });
+  if (compatible.length === 0) {
+    compatible.push(AVAILABLE_MODELS[0]);
+  }
 
-  return { recommended, compatible, ram };
+  compatible.sort((a, b) => b.intelligence - a.intelligence);
+
+  const recommendedCount = Math.min(2, compatible.length);
+  const recommended = compatible.slice(0, recommendedCount);
+  const others = compatible.slice(recommendedCount);
+
+  return { recommended, others, ram };
 }
 
 async function selectModelInteractive() {
-  const { recommended, compatible, ram } = sortModelsByHardware();
-  const options = [...recommended, ...compatible];
+  const { recommended, others, ram } = sortModelsByHardware();
+  const options = [...recommended, ...others];
 
-  console.log(`\n\x1b[36mDetected System RAM: ${ram} GB\x1b[0m\n`);
-  console.log("\x1b[32m=== Recommended for your hardware ===\x1b[0m");
-  recommended.forEach((m, idx) => console.log(`  [${idx + 1}] ${m.name} (${m.size})`));
+  console.log(`\n\x1b[36mDetected System RAM: ${ram} GB\x1b[0m`);
+  console.log("\x1b[90m(Hiding models exceeding your hardware limits for smooth performance)\x1b[0m\n");
 
-  if (compatible.length > 0) {
-    console.log("\n\x1b[33m=== Other Available Models ===\x1b[0m");
-    compatible.forEach((m, idx) => console.log(`  [${recommended.length + idx + 1}] ${m.name} (${m.size})`));
+  console.log("\x1b[32m=== Recommended Best Picks for Your Hardware ===\x1b[0m");
+  recommended.forEach((m, idx) => {
+    console.log(`  [${idx + 1}] ${m.name} (${m.size}) ⭐ Top Choice`);
+  });
+
+  if (others.length > 0) {
+    console.log("\n\x1b[33m=== Other Compatible Models ===\x1b[0m");
+    others.forEach((m, idx) => {
+      console.log(`  [${recommended.length + idx + 1}] ${m.name} (${m.size})`);
+    });
   }
 
   const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
@@ -93,29 +125,61 @@ async function selectModelInteractive() {
       }
 
       const selected = options[choiceIdx];
-      const currentUri = getSelectedModelUri();
-
-      if (currentUri && currentUri !== selected.uri) {
-        const rl2 = readline.createInterface({ input: process.stdin, output: process.stdout });
-        rl2.question("Do you want to KEEP existing downloaded models? (y/n): ", (keepAns) => {
-          rl2.close();
-          if (keepAns.trim().toLowerCase() === 'n') {
-            if (fs.existsSync(MODELS_DIR)) {
-              fs.readdirSync(MODELS_DIR).forEach(f => fs.unlinkSync(path.join(MODELS_DIR, f)));
-              console.log("\x1b[33mPrevious model files cleared.\x1b[0m");
-            }
-          }
-          saveJson(CONFIG_FILE, { activeModelUri: selected.uri });
-          console.log(`\x1b[32mActive model set to: ${selected.name}\x1b[0m`);
-          resolve();
-        });
-      } else {
-        saveJson(CONFIG_FILE, { activeModelUri: selected.uri });
-        console.log(`\x1b[32mActive model set to: ${selected.name}\x1b[0m`);
-        resolve();
-      }
+      saveJson(CONFIG_FILE, { activeModelUri: selected.uri });
+      console.log(`\x1b[32m✔ Active model set to: ${selected.name}\x1b[0m`);
+      resolve();
     });
   });
+}
+
+async function handleDeleteCommand(targetModelQuery) {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+
+  if (targetModelQuery) {
+    const matchingModel = AVAILABLE_MODELS.find(m => 
+      m.id.toLowerCase() === targetModelQuery.toLowerCase() || 
+      m.name.toLowerCase().includes(targetModelQuery.toLowerCase())
+    );
+
+    const modelName = matchingModel ? matchingModel.name : targetModelQuery;
+
+    rl.question(`Do you actually want to delete ${modelName}? (y/n): `, (ans) => {
+      rl.close();
+      if (ans.trim().toLowerCase() === 'y') {
+        let deleted = false;
+        if (fs.existsSync(MODELS_DIR)) {
+          const files = fs.readdirSync(MODELS_DIR);
+          files.forEach(file => {
+            if (matchingModel && matchingModel.uri.toLowerCase().includes(file.toLowerCase())) {
+              fs.unlinkSync(path.join(MODELS_DIR, file));
+              deleted = true;
+            } else if (file.toLowerCase().includes(targetModelQuery.toLowerCase())) {
+              fs.unlinkSync(path.join(MODELS_DIR, file));
+              deleted = true;
+            }
+          });
+        }
+        console.log(`\x1b[32m${modelName} deleted\x1b[0m`);
+      } else {
+        console.log("Deletion cancelled.");
+      }
+    });
+
+  } else {
+    rl.question("Do you actually want to delete Freeleo? (y/n): ", (ans) => {
+      rl.close();
+      if (ans.trim().toLowerCase() === 'y') {
+        console.log("\n\x1b[31mBye, it was nice while it lasted, Freeleo out.\x1b[0m");
+        try {
+          fs.rmSync(__dirname, { recursive: true, force: true });
+        } catch (err) {
+          console.log(`\x1b[33mNote: Some active files could not be immediately unlinked: ${err.message}\x1b[0m`);
+        }
+      } else {
+        console.log("Deletion cancelled.");
+      }
+    });
+  }
 }
 
 async function loadIntegrations() {
@@ -276,11 +340,12 @@ function runWalkthrough() {
   console.log("\x1b[36m=== Welcome to Freeleo CLI Interactive Walkthrough ===\x1b[0m\n");
   console.log("1. \x1b[32mf --chat\x1b[0m    Starts a standard private local AI session.");
   console.log("2. \x1b[32mf --connect\x1b[0m Local AI chat enabled with custom modular tool integrations.");
-  console.log("3. \x1b[32mf --model\x1b[0m   Switch, download, or clear local GGUF models.");
+  console.log("3. \x1b[32mf --model\x1b[0m   Switch, download, or clear hardware-compatible AI models.");
   console.log("4. \x1b[32mf --memory\x1b[0m  View and edit facts Freeleo remembers about you.");
   console.log("5. \x1b[32mf --rules\x1b[0m   View and edit self-improved behavioral guidelines.");
   console.log("6. \x1b[32mf --expose\x1b[0m  Run local HTTP REST server on localhost:5000.");
   console.log("7. \x1b[32mf --api\x1b[0m     Expose local server publicly using Localtunnel & API Key.");
+  console.log("8. \x1b[32mf --delete\x1b[0m  Delete entire platform or specific models.");
   console.log("\nSetup complete! Type 'f --chat' to get started immediately.\n");
 }
 
@@ -404,6 +469,8 @@ function printHelp() {
   console.log("  f --new               Run interactive first-time walkthrough");
   console.log("  f --expose            Expose local OpenAI-compatible REST server at localhost:5000");
   console.log("  f --api               Expose server publicly via Localtunnel with generated API key");
+  console.log("  f --delete            Delete the entire Freeleo platform workspace");
+  console.log("  f --delete <model>    Delete a specific downloaded model");
   console.log("  f --list              List saved conversation histories");
   console.log("  f --resume <id>       Resume past conversation session");
   console.log("  f --help              Display this command guide");
@@ -425,6 +492,10 @@ if (args.includes("--connect")) {
   startServer(5000, null);
 } else if (args.includes("--api")) {
   exposePublicly();
+} else if (args.includes("--delete") || args.includes("-d")) {
+  const deleteIdx = args.indexOf("--delete") !== -1 ? args.indexOf("--delete") : args.indexOf("-d");
+  const target = args[deleteIdx + 1];
+  handleDeleteCommand(target);
 } else if (args.includes("--list") || args.includes("-l")) {
   listHistories();
 } else if (args.includes("--resume") || args.includes("-r")) {
