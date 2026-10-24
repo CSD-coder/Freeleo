@@ -276,15 +276,19 @@ async function processPostSession(session) {
 
   try {
     const chatHistory = session.getChatHistory();
-    const transcript = chatHistory.map(h => `${h.role}: ${h.content}`).join("\n");
+    if (!chatHistory || chatHistory.length === 0) return;
 
+    const transcript = chatHistory.map(h => `[${h.role.toUpperCase()}] ${h.content}`).join("\n");
     const sequence = session.sequence;
+
     const analysisSession = new LlamaChatSession({
       contextSequence: sequence,
-      systemPrompt: "You are an objective AI memory analyzer. Extract facts or rules silently and precisely."
+      systemPrompt: "You are a strict background data analyzer. Your sole job is to read transcripts and extract metadata. You never continue conversations, roleplay, or write dialogue."
     });
 
-    const memoryPrompt = `Analyze this conversation transcript:\n${transcript}\n\nDid the user share personal facts or preferences? Return ONLY a concise summary of the fact, or 'NONE'.`;
+    // 1. Memory Extraction with anti-hallucination boundaries
+    const memoryPrompt = `=== START TRANSCRIPT ===\n${transcript}\n=== END TRANSCRIPT ===\n\nTask: Look at the user messages in the transcript above. Did the user share any personal facts, preferences, or personal details?\nRules: Return ONLY the extracted fact as a short sentence, or the exact word 'NONE'. Do not converse, explain, or continue the chat.`;
+    
     let memoryResult = "";
     await analysisSession.prompt(memoryPrompt, { onTextChunk(chunk) { memoryResult += chunk; } });
 
@@ -296,7 +300,9 @@ async function processPostSession(session) {
       console.log(`\x1b[32m✔ New Fact Remembered: "${cleanMemory}"\x1b[0m`);
     }
 
-    const reflectionPrompt = `Analyze this conversation transcript:\n${transcript}\n\nDid the AI make any mistakes or could it improve its responses? Return ONLY a concise new behavioral rule, or 'NO_CHANGE'.`;
+    // 2. Self-Improvement Reflection with anti-hallucination boundaries
+    const reflectionPrompt = `=== START TRANSCRIPT ===\n${transcript}\n=== END TRANSCRIPT ===\n\nTask: Analyze the AI's responses in the transcript. Did the AI make any mistakes, misunderstandings, or could its responses have been better?\nRules: Return ONLY a concise behavioral rule for future turns, or the exact words 'NO_CHANGE'. Do not converse, explain, or continue the chat.`;
+    
     let reflectionResult = "";
     await analysisSession.prompt(reflectionPrompt, { onTextChunk(chunk) { reflectionResult += chunk; } });
 
