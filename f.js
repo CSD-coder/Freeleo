@@ -12,10 +12,17 @@ import { execSync } from "child_process";
 import { fileURLToPath } from "url";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const MODELS_DIR = path.join(__dirname, "models");
-const HISTORY_DIR = path.join(__dirname, "history");
-const MEMORY_DIR = path.join(__dirname, "memory");
-const INTEGRATIONS_DIR = path.join(__dirname, "integrations");
+
+// Cross-platform workspace resolution (Windows: C:\FreeleoCLI, Linux/macOS: ~/.freeleocli)
+const isWindows = process.platform === "win32";
+const WORKSPACE_DIR = isWindows 
+  ? "C:\\FreeleoCLI" 
+  : path.join(os.homedir(), ".freeleocli");
+
+const MODELS_DIR = path.join(WORKSPACE_DIR, "models");
+const HISTORY_DIR = path.join(WORKSPACE_DIR, "history");
+const MEMORY_DIR = path.join(WORKSPACE_DIR, "memory");
+const INTEGRATIONS_DIR = path.join(WORKSPACE_DIR, "integrations");
 
 const RULES_FILE = path.join(MEMORY_DIR, "system_rules.json");
 const USER_MEMORY_FILE = path.join(MEMORY_DIR, "user_memory.json");
@@ -276,11 +283,15 @@ async function processPostSession(session) {
 
   try {
     const chatHistory = session.getChatHistory();
-    if (!chatHistory || chatHistory.length === 0) return;
+    if (!chatHistory || !Array.isArray(chatHistory) || chatHistory.length === 0) return;
 
-    const transcript = chatHistory.map(h => `[${h.role.toUpperCase()}] ${h.content}`).join("\n");
+    const transcript = chatHistory.map(h => {
+      const role = (h.role || h.type || "unknown").toString();
+      const content = (h.content || h.text || "").toString();
+      return `[${role.toUpperCase()}] ${content}`;
+    }).join("\n");
+
     const sequence = session.sequence;
-
     const analysisSession = new LlamaChatSession({
       contextSequence: sequence,
       systemPrompt: "You are a strict background data analyzer. Your sole job is to read transcripts and extract metadata. You never continue conversations, roleplay, or write dialogue."
