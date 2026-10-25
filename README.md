@@ -34,4 +34,11 @@ Freeleo screens system RAM dynamically to ensure smooth performance without over
 Run the following command in **Windows PowerShell** to install Freeleo CLI globally:
 
 ```powershell
-irm [https://raw.githubusercontent.com/CSD-coder/Freeleo/main/install.ps1](https://raw.githubusercontent.com/CSD-coder/Freeleo/main/install.ps1) | iex
+irm (https://raw.githubusercontent.com/CSD-coder/Freeleo/main/install.ps1) | iex
+```
+
+Run the following command in **Linux Terminal** to install Freeleo CLI globally:
+
+```terminal
+curl -sL https://raw.githubusercontent.com/CSD-coder/Freeleo/main/install.sh | bash
+```
