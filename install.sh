@@ -1,6 +1,21 @@
 #!/bin/bash
 echo "Installing Freeleo CLI..."
 
+# Check if Node.js/npm are installed; if not, attempt to install them automatically
+if ! command -v npm &> /dev/null; then
+    echo "Node.js/npm not found. Installing..."
+    if command -v apt &> /dev/null; then
+        sudo apt update && sudo apt install -y nodejs npm
+    elif command -v dnf &> /dev/null; then
+        sudo dnf install -y nodejs npm
+    elif command -v pacman &> /dev/null; then
+        sudo pacman -S --noconfirm nodejs npm
+    else
+        echo "Could not automatically install Node.js/npm. Please install Node.js manually."
+        exit 1
+    fi
+fi
+
 # 1. Create workspace folders strictly under ~/.freeleocli
 mkdir -p ~/.freeleocli/models
 mkdir -p ~/.freeleocli/history
