@@ -1,6 +1,6 @@
 # Freeleo CLI 🚀
 
-**Freeleo CLI** is a lightweight, self-improving, globally accessible Windows PowerShell AI assistant running locally inside `C:\FreeleoCLI`. Powered by open-source GGUF models via `node-llama-cpp`, Freeleo operates completely offline, maintains long-term user memory, auto-reflects to improve its behavior, and provides modular tool integrations and REST API endpoints.
+**Freeleo CLI** is a lightweight, self-improving, globally accessible Windows PowerShell (and Linux Terminal) AI assistant running locally inside `C:\FreeleoCLI`. Powered by open-source GGUF models via `node-llama-cpp`, Freeleo operates completely offline, maintains long-term user memory, auto-reflects to improve its behavior, and provides modular tool integrations and REST API endpoints.
 
 ---
 
